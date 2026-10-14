@@ -36,7 +36,10 @@ libcosmic = { workspace = true, features = [
     "desktop",
     "wayland",
     "tokio",
-    "dbus-config",
+    # WMDE: no "dbus-config". The greeter session has no settings daemon (wmde-session
+    # starts it for a user session, and it has no D-Bus activation), so every config watch
+    # went over D-Bus, failed and retried for good, filling the journal with "Failed to create
+    # watcher". Without the feature the configs are watched as files, which works here.
 ] }
 tracing.workspace = true
 tracing-journald = { workspace = true, optional = true }
