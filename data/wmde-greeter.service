@@ -1,6 +1,14 @@
 [Unit]
 Description=WMDE Greeter
-After=systemd-user-sessions.service plymouth-quit-wait.service wmde-greeter-daemon.service
+After=systemd-user-sessions.service wmde-greeter-daemon.service
+# WMDE: take the screen over from the Plymouth boot splash without the console showing in
+# between, as gdm does. The unit quits Plymouth itself with --retain-splash, so the splash
+# stays on screen until the greeter's compositor takes the display; plymouth-quit would clear
+# it first, hence the conflict. If the greeter cannot start, plymouth-quit runs after all and
+# the console is not left behind a frozen splash.
+After=plymouth-quit.service plymouth-start.service
+Conflicts=plymouth-quit.service
+OnFailure=plymouth-quit.service
 # greetd holds VT1, and so does a kmscon console on tty1 (upstream 1.10; Arch names the unit
 # kmsconvt@, not upstream's kmscon@).
 After=getty@tty1.service kmsconvt@tty1.service
@@ -9,6 +17,8 @@ Wants=wmde-greeter-daemon.service
 
 [Service]
 Type=simple
+# "-": without Plymouth there is nothing to quit and the greeter starts as before.
+ExecStartPre=-/usr/bin/plymouth quit --retain-splash
 ExecStart=greetd --config /etc/greetd/wmde-greeter.toml
 IgnoreSIGPIPE=no
 SendSIGHUP=yes
