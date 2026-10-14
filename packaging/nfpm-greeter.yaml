@@ -1,0 +1,78 @@
+# Один конфиг nFPM на оба формата. Стейджинг готовит `just package-staging`,
+# версию всегда подставляет just через env WMDE_VERSION (см. justfile).
+# ВАЖНО: только ${WMDE_VERSION} без :-дефолта — nFPM раскрывает env через
+# os.ExpandEnv и :- не понимает (версия молча станет 0.0.0~rc0).
+#
+# Пакет-локер: бинарь, его PAM-стек и картинка. Это всё что нужно WMDE-сессии;
+# greetd и display manager сюда не тянутся (см. PKGBUILD).
+name: wmde-greeter
+arch: amd64
+version: ${WMDE_VERSION}
+release: 1
+maintainer: WMDE <wmde@wmde.fun>
+description: |-
+  WMDE screen locker (fork of cosmic-greeter)
+  Wayland client of the running compositor; needs no greeter daemon.
+homepage: https://wmde.fun
+license: GPL-3.0-only
+section: x11
+
+depends:
+  - libc6 | glibc
+  - libgcc-s1 | libgcc
+  - libwayland-client0
+  - libxkbcommon0
+  - libpam0g
+
+suggests:
+  - wmde-greeter-dm
+
+contents:
+  - src: target/staging/usr/bin/wmde-greeter
+    dst: /usr/bin/wmde-greeter
+    file_info: { mode: 0755 }
+  - src: target/staging/etc/pam.d/wmde-greeter
+    dst: /etc/pam.d/wmde-greeter
+    type: config|noreplace
+  - src: target/staging/usr/share/wmde-greeter/background.jpg
+    dst: /usr/share/wmde-greeter/background.jpg
+    file_info: { mode: 0644 }
+  # doc (copyright + changelog.Debian.gz) готовит just package-doc.
+  # Только для deb: в rpm нет %doc-разметки у nFPM,
+  # а лицензия и changelog там и так есть (License-тег + %changelog).
+  - src: target/staging/usr/share/doc/wmde-greeter/
+    dst: /usr/share/doc/wmde-greeter/
+    type: tree
+    packager: deb
+
+# %changelog для rpm генерит just package-staging (иначе E: no-changelogname-tag).
+# Путь от корня репо: nFPM резолвит его от cwd, а не от каталога конфига.
+changelog: target/changelog.yaml
+
+overrides:
+  deb:
+    depends:
+      - libc6
+      - libgcc-s1
+      - libwayland-client0
+      - libxkbcommon0
+      - libpam0g
+      - libfontconfig1
+      - libfreetype6
+      - libexpat1
+    suggests:
+      - wmde-greeter-dm
+  rpm:
+    # SONAME вместо имён пакетов: имена расходятся между
+    # Fedora и openSUSE, а SONAME предоставляют обе семьи.
+    depends:
+      - libc.so.6()(64bit)
+      - libgcc_s.so.1()(64bit)
+      - libwayland-client.so.0()(64bit)
+      - libxkbcommon.so.0()(64bit)
+      - libpam.so.0()(64bit)
+      - libfontconfig.so.1()(64bit)
+      - libfreetype.so.6()(64bit)
+      - libexpat.so.1()(64bit)
+    suggests:
+      - wmde-greeter-dm

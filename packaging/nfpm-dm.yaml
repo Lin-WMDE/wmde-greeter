@@ -1,0 +1,98 @@
+# Пакет-дисплей-менеджер: демон, старт-скрипт, D-Bus-политика, sysusers/tmpfiles,
+# оба юнита и конфиг greetd. Юниты едут ВЫКЛЮЧЕННЫМИ (см. PKGBUILD): display manager
+# включается руками через `systemctl enable wmde-greeter.service`, postinstall
+# ничего не включает — только daemon-reload.
+name: wmde-greeter-dm
+arch: amd64
+version: ${WMDE_VERSION}
+release: 1
+maintainer: WMDE <wmde@wmde.fun>
+description: |-
+  WMDE greeter for greetd
+  Display manager owning the fun.wmde.Greeter name.
+homepage: https://wmde.fun
+license: GPL-3.0-only
+section: x11
+
+# wmde-greeter/greetd/comp/icons — наши же пакеты, их пока нет в репозиториях:
+# в recommends, иначе пакет вообще не встанет (как у wmde-session).
+# apt/dnf ставят Recommends по умолчанию.
+depends:
+  - libc6 | glibc
+  - libgcc-s1 | libgcc
+
+recommends:
+  - wmde-greeter
+  - wmde-greetd
+  - wmde-comp
+  - wmde-icons-base
+
+suggests:
+  - wmde-randr
+  - networkmanager
+  - upower
+
+contents:
+  - src: target/staging/usr/bin/wmde-greeter-daemon
+    dst: /usr/bin/wmde-greeter-daemon
+    file_info: { mode: 0755 }
+  - src: target/staging/usr/bin/wmde-greeter-start
+    dst: /usr/bin/wmde-greeter-start
+    file_info: { mode: 0755 }
+  - src: target/staging/usr/share/dbus-1/system.d/fun.wmde.Greeter.conf
+    dst: /usr/share/dbus-1/system.d/fun.wmde.Greeter.conf
+    file_info: { mode: 0644 }
+  - src: target/staging/usr/lib/sysusers.d/wmde-greeter.conf
+    dst: /usr/lib/sysusers.d/wmde-greeter.conf
+    file_info: { mode: 0644 }
+  - src: target/staging/usr/lib/tmpfiles.d/wmde-greeter.conf
+    dst: /usr/lib/tmpfiles.d/wmde-greeter.conf
+    file_info: { mode: 0644 }
+  - src: target/staging/usr/lib/systemd/system/wmde-greeter.service
+    dst: /usr/lib/systemd/system/wmde-greeter.service
+    file_info: { mode: 0644 }
+  - src: target/staging/usr/lib/systemd/system/wmde-greeter-daemon.service
+    dst: /usr/lib/systemd/system/wmde-greeter-daemon.service
+    file_info: { mode: 0644 }
+  - src: target/staging/etc/greetd/wmde-greeter.toml
+    dst: /etc/greetd/wmde-greeter.toml
+    type: config|noreplace
+  # doc готовит just package-doc (общий).
+  - src: target/staging/usr/share/doc/wmde-greeter-dm/
+    dst: /usr/share/doc/wmde-greeter-dm/
+    type: tree
+    packager: deb
+
+scripts:
+  postinstall: packaging/postinstall-dm.sh
+  postremove: packaging/postremove-dm.sh
+
+changelog: target/changelog.yaml
+
+overrides:
+  deb:
+    depends:
+      - libc6
+      - libgcc-s1
+    recommends:
+      - wmde-greeter
+      - wmde-greetd
+      - wmde-comp
+      - wmde-icons-base
+    suggests:
+      - wmde-randr
+      - network-manager
+      - upower
+  rpm:
+    depends:
+      - libc.so.6()(64bit)
+      - libgcc_s.so.1()(64bit)
+    recommends:
+      - wmde-greeter
+      - wmde-greetd
+      - wmde-comp
+      - wmde-icons-base
+    suggests:
+      - wmde-randr
+      - NetworkManager
+      - upower
