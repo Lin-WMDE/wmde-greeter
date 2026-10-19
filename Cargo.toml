@@ -49,6 +49,9 @@ pwd.workspace = true
 ron.workspace = true
 shlex = "1.3.0"
 xkb-data = "0.2"
+# WMDE: translated layout names from the xkeyboard-config catalog
+gettext-rs = { version = "0.8", features = ["gettext-system"] }
+libc = "0.2"
 xdg = "3.0"
 #TODO: reduce features
 tokio = { workspace = true, features = ["full"] }

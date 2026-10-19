@@ -238,6 +238,8 @@ impl<M: From<Message> + Send + 'static> Common<M> {
                 .variant
                 .split_terminator(',')
                 .chain(std::iter::repeat(""));
+            // WMDE: descriptions go through the xkeyboard-config catalog, see
+            // `localize::layout_description`.
             'outer: for (config_layout, config_variant) in config_layouts.zip(config_variants) {
                 for xkb_layout in keyboard_layouts.layouts() {
                     if config_layout != xkb_layout.name() {
@@ -245,7 +247,9 @@ impl<M: From<Message> + Send + 'static> Common<M> {
                     }
                     if config_variant.is_empty() {
                         let active_layout = ActiveLayout {
-                            description: xkb_layout.description().to_owned(),
+                            description: crate::localize::layout_description(
+                                xkb_layout.description(),
+                            ),
                             layout: config_layout.to_owned(),
                             variant: config_variant.to_owned(),
                         };
@@ -261,7 +265,9 @@ impl<M: From<Message> + Send + 'static> Common<M> {
                             continue;
                         }
                         let active_layout = ActiveLayout {
-                            description: xkb_variant.description().to_owned(),
+                            description: crate::localize::layout_description(
+                                xkb_variant.description(),
+                            ),
                             layout: config_layout.to_owned(),
                             variant: config_variant.to_owned(),
                         };
