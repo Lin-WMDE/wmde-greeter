@@ -1,6 +1,6 @@
 [package]
 name = "wmde-greeter"
-version = "1.10.0"
+version = "1.11.0"
 edition = "2024"
 
 # The PACKAGE is renamed (the binary and the i18n domain follow it: justfile takes the
